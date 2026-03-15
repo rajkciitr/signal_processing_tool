@@ -1,0 +1,2 @@
+version,device name,recording epoch time,recording time,recording timezone,platform,appVersion,device id,sensors,sampleRateMs,standardisation,platform version
+3,SM-A156E,1773230416382,2026-03-11_12-00-16,Asia/Kolkata,android,1.54.1,d4abe05a-5b65-4c74-9315-58e1bcaf4378,Accelerometer|Gravity|Gyroscope|Orientation|Magnetometer|Compass|Location|Microphone|Pedometer|Activity|Annotation|TotalAcceleration|MagnetometerUncalibrated|GyroscopeUncalibrated|AccelerometerUncalibrated,10|10|10|10|10|10|0|100|10|0||10|10|10|10,false,36
