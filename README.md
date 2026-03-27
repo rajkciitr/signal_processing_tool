@@ -5,3 +5,6 @@ Useful links:
 https://github.com/SuperKogito/spafe
 
 # Resnet
+
+# source for Android app running onnxruntime-genai model
+https://github.com/microsoft/onnxruntime-genai/blob/main/src/python/py/models/README.md
