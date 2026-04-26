@@ -8,9 +8,10 @@ https://github.com/SuperKogito/spafe
 https://github.com/microsoft/onnxruntime-genai/blob/main/src/python/py/models/README.md
 
 # Steps to convert tf model to tflite
-'''{python}
+```{python}
+
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 with open("model.tflite", "wb") as f:
     f.write(tflite_model)
-'''
+```
