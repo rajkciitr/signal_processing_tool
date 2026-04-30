@@ -23,3 +23,5 @@ https://arxiv.org/pdf/2602.06523
 [3] Activity Recognition Using a Multi-head Convolution Neural Network Integrated with Attention Mechanism, 2026 (find file attached above).
 [4] DeepConvContext: A Multi-Scale Approach to Timeseries Classification in Human Activity Recognition, 2025, https://arxiv.org/abs/2505.20894
 
+# Pitch
+https://brookemosby.github.io/Signal_Analysis/_modules/Signal_Analysis/features/signal.html
