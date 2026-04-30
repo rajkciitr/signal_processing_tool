@@ -1,0 +1,238 @@
+import kotlin.math.*
+
+val sig = FloatArray(8000) { 0f }
+val time_array = FloatArray(213) { 0f }
+val window = FloatArray(512) { 0f }
+val r_w = FloatArray(213) { 0f }
+
+val inf = 99.0f
+val minf = -99.0f
+val rate = 16000f
+val min_pitch = 75.0f
+val max_pitch = 450.0f
+val max_num_cands = 9
+val silence_thres = 0.03f
+val voicing_thres = 0.45f
+val octave_cost = 0.01f
+val octave_jump_cost = 0.4375f
+val voiced_unvoiced_cost = 0.175f
+val nFFT = 512
+
+val max_place_poss = 1.0f / min_pitch
+val min_place_poss = 1.0f / max_pitch
+val min_place_poss2 = 0.5f / max_pitch
+val pds_per_window = 2.4f
+
+val frame_len = 512
+val time_len = 128
+const val pi = 3.141592653589793
+
+// Complex number class
+data class Complex(val re: Float, val im: Float) {
+    operator fun plus(other: Complex) = Complex(re + other.re, im + other.im)
+    operator fun times(scalar: Float) = Complex(re * scalar, im * scalar)
+}
+
+// -------- FUNCTIONS --------
+
+fun find_peak(y: FloatArray, arr_size: Int, rel_val: FloatArray, max_pos: FloatArray) {
+    val dy = FloatArray(arr_size - 1)
+    var k = max_num_cands - 2
+
+    for (i in 0 until arr_size - 1) {
+        dy[i] = y[i + 1] - y[i]
+    }
+
+    for (i in 1 until arr_size - 1) {
+        if (dy[i] < 0 && dy[i - 1] > 0 && y[i] > 0.225f) {
+            rel_val[k] = y[i] - octave_cost * log2(time_array[i] * min_pitch)
+            max_pos[k] = time_array[i]
+            k--
+            if (k < 0) break
+        }
+    }
+
+    if (k > 1) {
+        val start_id = max_num_cands - 1 - k
+        val end_id = max_num_cands - 2
+
+        for (mi in start_id until end_id) {
+            for (ni in start_id until (start_id + end_id - mi)) {
+                if (rel_val[ni] > rel_val[ni + 1]) {
+                    val temp1 = rel_val[ni]
+                    rel_val[ni] = rel_val[ni + 1]
+                    rel_val[ni + 1] = temp1
+
+                    val temp2 = max_pos[ni]
+                    max_pos[ni] = max_pos[ni + 1]
+                    max_pos[ni + 1] = temp2
+                }
+            }
+        }
+    }
+}
+
+fun find_max(sig: FloatArray, start: Int, samples: Int): Pair<Float, Float> {
+    var sum = 0f
+    for (i in 0 until samples) {
+        sum += sig[start + i]
+    }
+    val mean = sum / samples
+
+    var global_peak = 0f
+    for (i in 0 until samples) {
+        val temp = abs(sig[start + i] - mean)
+        if (temp > global_peak) global_peak = temp
+    }
+
+    return Pair(global_peak, mean)
+}
+
+fun computeDFT(x: FloatArray, N: Int): Array<Complex> {
+    val X = Array(N) { Complex(0f, 0f) }
+
+    for (k in 0 until N) {
+        var sum = Complex(0f, 0f)
+        for (n in 0 until N) {
+            val angle = 2 * PI.toFloat() * k * n / N
+            val exp = Complex(cos(angle), -sin(angle))
+            sum = sum + exp.times(x[n])
+        }
+        X[k] = sum
+    }
+    return X
+}
+
+fun computeNorm(X: Array<Complex>, N: Int): FloatArray {
+    val x = FloatArray(N)
+    for (k in 0 until N) {
+        x[k] = X[k].re * X[k].re + X[k].im * X[k].im
+    }
+    return x
+}
+
+fun computeReal(X: Array<Complex>, N: Int): FloatArray {
+    val x = FloatArray(N)
+    for (k in 0 until N) {
+        x[k] = X[k].re
+    }
+    return x
+}
+
+// -------- MAIN --------
+
+fun main() {
+
+    val sig_len = 8000
+    val segment = FloatArray(frame_len)
+
+    val num_frames = (sig_len - frame_len) / time_len + 1
+    println("num_frames=$num_frames")
+
+    val best_cands = Array(num_frames) { FloatArray(max_num_cands) }
+    val strengths = Array(num_frames) { FloatArray(max_num_cands) }
+
+    val (global_peak, global_mean) = find_max(sig, 0, sig_len)
+
+    println("Computed global_peak: $global_peak")
+    println("Computed global_mean: $global_mean")
+
+    var start_i = 0
+
+    for (fr in 0 until num_frames) {
+
+        val (local_peak, local_mean) = find_max(sig, start_i, frame_len)
+
+        for (l in 0 until frame_len) {
+            segment[l] = (sig[start_i + l] - local_mean) * window[l]
+        }
+
+        val intensity = local_peak / global_peak
+        val sil_strength = voicing_thres + max(
+            0f,
+            2.0f - (intensity / (silence_thres / (1.0f + voicing_thres)))
+        )
+
+        val x_fft = computeDFT(segment, frame_len)
+        val mag_sq = computeNorm(x_fft, frame_len)
+        val x_fft2 = computeDFT(mag_sq, frame_len)
+        val r_a = computeReal(x_fft2, frame_len)
+
+        val r_x = FloatArray(213)
+        for (j in 0 until 213) {
+            r_x[j] = r_a[j] / r_w[j]
+        }
+
+        val divisor = r_x[0]
+        for (j in 0 until 213) {
+            r_x[j] /= divisor
+        }
+
+        val rel_val = FloatArray(max_num_cands) { sil_strength }
+        val max_pos = FloatArray(max_num_cands) { inf }
+
+        find_peak(r_x, 213, rel_val, max_pos)
+
+        for (i in 0 until max_num_cands) {
+            best_cands[fr][i] = max_pos[i]
+            strengths[fr][i] = rel_val[i]
+        }
+
+        start_i += time_len
+    }
+
+    var best_total_cost = minf
+    val best_total_path = FloatArray(num_frames)
+
+    for (cand in 0 until max_num_cands) {
+
+        val total_path = FloatArray(num_frames)
+        total_path[0] = best_cands[0][cand]
+
+        var prev_delta = strengths[0][cand]
+        var maximum = minf
+
+        for (level in 1 until num_frames) {
+            val prev_val = total_path[level - 1]
+            var best_val = inf
+
+            for (j in 0 until max_num_cands) {
+                val cur_val = best_cands[level][j]
+                val cur_delta = strengths[level][j]
+
+                val cur_unvoiced = (cur_val == inf || cur_val < min_place_poss2)
+                val prev_unvoiced = (prev_val == inf || prev_val < min_place_poss2)
+
+                val cost = when {
+                    cur_unvoiced && prev_unvoiced -> 0f
+                    cur_unvoiced || prev_unvoiced -> voiced_unvoiced_cost
+                    else -> octave_jump_cost * abs(log2(cur_val / prev_val))
+                }
+
+                val value = prev_delta - cost + cur_delta
+                if (value > maximum) {
+                    maximum = value
+                    best_val = cur_val
+                }
+            }
+
+            prev_delta = maximum
+            total_path[level] = best_val
+        }
+
+        if (maximum > best_total_cost) {
+            best_total_cost = maximum
+            for (i in 0 until num_frames) {
+                best_total_path[i] = total_path[i]
+            }
+        }
+    }
+
+    val F_0 = FloatArray(num_frames)
+    for (i in 0 until num_frames) {
+        if (best_total_path[i] < max_place_poss && best_total_path[i] > min_place_poss) {
+            F_0[i] = 1 / best_total_path[i]
+        }
+        println(F_0[i])
+    }
+}
