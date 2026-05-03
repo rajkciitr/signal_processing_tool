@@ -25,3 +25,12 @@ https://arxiv.org/pdf/2602.06523
 
 # Pitch
 https://brookemosby.github.io/Signal_Analysis/_modules/Signal_Analysis/features/signal.html
+
+Wearable energy harvesters generating electricity from low-frequency human limb movement
+https://www.nature.com/articles/s41378-018-0024-3
+
+An ultraflexible energy harvesting-storage system for wearable applications
+https://www.nature.com/articles/s41467-024-50894-w
+
+Flexible self-charging power sources
+https://www.nature.com/articles/s41578-022-00441-0?fromPaywallRec=false
