@@ -136,3 +136,4 @@ IMPROVING GUI GROUNDING WITH EXPLICIT
 POSITION-TO-COORDINATE MAPPING
 https://arxiv.org/pdf/2510.03230
 https://www.emergentmind.com/topics/interleaved-mrope
+https://medium.com/@maxshapp/grouped-query-attention-gqa-explained-with-code-e56ee2a1df5a
