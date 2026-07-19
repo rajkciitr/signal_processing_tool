@@ -129,3 +129,10 @@ draw_boxes(
     output_path
 )
 ```
+REVISITING MULTIMODAL POSITIONAL ENCODING IN
+VISION–LANGUAGE MODELS
+https://arxiv.org/pdf/2510.23095
+IMPROVING GUI GROUNDING WITH EXPLICIT
+POSITION-TO-COORDINATE MAPPING
+https://arxiv.org/pdf/2510.03230
+https://www.emergentmind.com/topics/interleaved-mrope
