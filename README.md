@@ -129,11 +129,12 @@ draw_boxes(
     output_path
 )
 ```
-REVISITING MULTIMODAL POSITIONAL ENCODING IN
-VISION–LANGUAGE MODELS
-https://arxiv.org/pdf/2510.23095
-IMPROVING GUI GROUNDING WITH EXPLICIT
-POSITION-TO-COORDINATE MAPPING
-https://arxiv.org/pdf/2510.03230
-https://www.emergentmind.com/topics/interleaved-mrope
-https://medium.com/@maxshapp/grouped-query-attention-gqa-explained-with-code-e56ee2a1df5a
+REVISITING MULTIMODAL POSITIONAL ENCODING IN VISION–LANGUAGE MODELS https://arxiv.org/pdf/2510.23095
+
+IMPROVING GUI GROUNDING WITH EXPLICIT POSITION-TO-COORDINATE MAPPING https://arxiv.org/pdf/2510.03230
+
+I-mROPE Theory: https://www.emergentmind.com/topics/interleaved-mrope
+
+GQA Explanation: https://medium.com/@maxshapp/grouped-query-attention-gqa-explained-with-code-e56ee2a1df5a
+
+Lecture note on Attension: https://cs231n.stanford.edu/slides/2022/lecture_1_2_ruohan.pdf
